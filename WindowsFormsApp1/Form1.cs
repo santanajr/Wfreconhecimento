@@ -56,6 +56,8 @@ namespace WindowsFormsApp1
 
         public Emgu.CV.Image<Emgu.CV.Structure.Bgr, Byte> imageFrame;
 
+        Graphics graf;
+
         public Form1()
         {
             InitializeComponent();
@@ -109,9 +111,14 @@ namespace WindowsFormsApp1
         {
             Webcam.Retrieve(Frame);
             imageFrame = Frame.ToImage<Bgr, Byte>();
-
+            
             if (imageFrame != null)
             {
+
+                var Chapeu = new Bitmap("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\chapeu.jpg");
+                PointF p = new PointF();
+                Graphics g = this.webcambox.CreateGraphics();
+
                 var grayFrame = imageFrame.Convert<Gray, Byte>();
 
                 var faces = Facedetection.DetectMultiScale(grayFrame, 1.3, 5);
@@ -147,31 +154,26 @@ namespace WindowsFormsApp1
                         //}
 
 
-
-
+                       
+                        
                         imageFrame.Draw(face, new Bgr(Color.BurlyWood), 3);
+                        
 
+                        p.X = face.X ;
+                        p.Y = face.Y ;
 
+                        
+                        g.DrawImage(Chapeu, 50,0);
 
+                        //g.DrawImage()
 
-
-                        //foreach (var im in trainingImages)
-                        //{
-                        //    trainingImages[i] = im.Resize(100, 100, Emgu.CV.CvEnum.Inter.Linear);
-                        //    i = i + 1;
-                        //}
-
-                        // recognizer.Train(trainingImages, labels);
-                        // EigenFaceRecognizer.PredictionResult result = recognizer.Predict(faceGrayPic);
-
-                        // if (result.Label != -1)
-                        // {
-                        //     int lab = result.Label;
-                        // }
-
-                        //face1 = face;
                         this.webcambox.Image = imageFrame.ToBitmap();
 
+                        //Facesquare = false;
+
+                        //var Chapeu = new Bitmap("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\chapeu.jpg");
+
+                        //this.webcambox.DrawToBitmap(Chapeu, face);
 
                         //alturaface = face.Height;
                         //larguraface = face.Width;
@@ -299,8 +301,6 @@ namespace WindowsFormsApp1
                         .Copy(face)
                         .Convert<Gray, Byte>()
                         .Resize(tamimagem[indtam], altimagem[indtam], Emgu.CV.CvEnum.Inter.Cubic);
-
-
 
                     string caminho =
                                     "C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\foto_" +
@@ -445,6 +445,34 @@ namespace WindowsFormsApp1
 
         private void label1_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var Chapeu = new Bitmap("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\chapeu.jpg");
+            //var i = this.faceRect[0].Width;
+            //foreach (var face in this.faceRect)
+            // {
+            //var ExtractedFace = new Bitmap(this.faceRect[0].Width, this.faceRect[0].Height);
+            //var FaceCanvas = Graphics.FromImage(Chapeu);
+            //FaceCanvas.DrawImage(Chapeu, 0, 0, this.faceRect[0], GraphicsUnit.Pixel);
+            PointF p = new PointF();
+            p.X = 1;
+            p.Y = 1;
+            Graphics g = this.webcambox.CreateGraphics();
+            g.DrawImage(Chapeu, p );
+            //Rectangle r = new Rectangle();
+            //r.Width = 500; //this.faceRect[0].Width;
+            //r.Height = 500;// this.faceRect[0].Height;
+            //r.X = 50 ;
+            //r.Y = 50;
+
+
+            //this.webcambox.DrawToBitmap(Chapeu, r );
+            //this.webcambox.Image.Save("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\foto_chapeu.jpg");    
+            //}
+
 
         }
     }
