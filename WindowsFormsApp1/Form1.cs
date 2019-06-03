@@ -58,13 +58,15 @@ namespace WindowsFormsApp1
 
         Graphics graf;
 
+        public bool statusvermelho = false; 
+
         public Form1()
         {
             InitializeComponent();
 
             //Emgu.CV.Image<Gray, byte> imageFrame = new Emgu.CV.Image<Gray, byte>();
 
-            Facerecognition = new EigenFaceRecognizer(80, double.PositiveInfinity);
+            //Facerecognition = new EigenFaceRecognizer(22, double.PositiveInfinity);
 
             Facedetection = new CascadeClassifier
                   ((Application.StartupPath + "\\haarcascade_frontalface_default.xml"));
@@ -153,17 +155,25 @@ namespace WindowsFormsApp1
 
                         //}
 
-
-                       
-                        
                         imageFrame.Draw(face, new Bgr(Color.BurlyWood), 3);
+                        statusvermelho = false;
+                        if ( (face.Height > 200) && (face.Height < 230)  )
+                            {
+                            if ( (face.Width > 200) && (face.Width < 230) )
+                               {
+                                     imageFrame.Draw(face, new Bgr(Color.Red), 6);
+                                     statusvermelho = true;
+                            }
+                        }
+                        
+                        //imageFrame.Draw(face, new Bgr(Color.BurlyWood), 3);
                         
 
-                        p.X = face.X ;
-                        p.Y = face.Y ;
+                        //p.X = face.X ;
+                        //p.Y = face.Y ;
 
                         
-                        g.DrawImage(Chapeu, 50,0);
+                        //g.DrawImage(Chapeu, 50,0);
 
                         //g.DrawImage()
 
@@ -241,6 +251,11 @@ namespace WindowsFormsApp1
 
         private void button4_Click(object sender, EventArgs e)
         {
+            if (!statusvermelho)
+            { 
+                return;
+            }
+
             var i = 0;
 
             imageFrame._EqualizeHist();//equaliza o brilho
@@ -251,16 +266,16 @@ namespace WindowsFormsApp1
             int[] altimagem = new int[5];
 
             tamimagem[0] = 64;
-            tamimagem[1] = 100;
-            tamimagem[2] = 128;
-            tamimagem[3] = 160;
-            tamimagem[4] = 200;
+            //tamimagem[1] = 100;
+            //tamimagem[2] = 128;
+            //tamimagem[3] = 160;
+            //tamimagem[4] = 200;
 
             altimagem[0] = 64;
-            altimagem[1] = 100;
-            altimagem[2] = 128;
-            altimagem[3] = 160;
-            altimagem[4] = 200;
+            //altimagem[1] = 100;
+            //altimagem[2] = 128;
+            //altimagem[3] = 160;
+            //altimagem[4] = 200;
 
             int[] resposta = new int[5];
             double[] distance = new double[5];
@@ -281,9 +296,9 @@ namespace WindowsFormsApp1
               //  altimagem[3] = face.Height + 80;
               //  altimagem[4] = face.Height + 100;
 
-
-
-                for (indtam = 0; indtam < 5; indtam++)
+                
+                
+                for (indtam = 0; indtam < 1;indtam++)
                 {
                     var imageresize = imageFrame.Resize(tamimagem[indtam], altimagem[indtam], Emgu.CV.CvEnum.Inter.Cubic);
                     var imagegray = imageresize.Convert<Gray, Byte>();
@@ -301,6 +316,8 @@ namespace WindowsFormsApp1
                         .Copy(face)
                         .Convert<Gray, Byte>()
                         .Resize(tamimagem[indtam], altimagem[indtam], Emgu.CV.CvEnum.Inter.Cubic);
+
+                    
 
                     string caminho =
                                     "C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\foto_" +
@@ -364,24 +381,31 @@ namespace WindowsFormsApp1
                         i = i + 1;
                     }
 
-                    EigenFaceRecognizer recognizer = new EigenFaceRecognizer();
+                    int limiteresposta = 1000;
+                    double distancia = 0;
+                    EigenFaceRecognizer.PredictionResult result;
+                    int label = -1;
+
+                    while ( (label == -1)  && (limiteresposta <= 5000) )
+                      { 
+                            Facerecognition = new EigenFaceRecognizer(i, limiteresposta);
+
+                    //EigenFaceRecognizer recognizer = new EigenFaceRecognizer();
+                            this.Facerecognition.Train<Gray, Byte>(trainingImages.ToArray(), labels.ToArray());
+                            this.Facerecognition.Write("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\train_" + tamimagem[indtam].ToString() + ".yml");
+                            this.Facerecognition.Read("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\train_" + tamimagem[indtam].ToString() + ".yml");
                     //recognizer.Train<Gray, Byte>(trainingImages.ToArray(), labels.ToArray());
-                    //recognizer.Write("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\train_" + tamimagem[indtam].ToString() + ".yml");
-                    recognizer.Read("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\train_" + tamimagem[indtam].ToString() + ".yml");
-
-                    //recognizer.Train<Gray, Byte>(trainingImages.ToArray(), labels.ToArray());
-
-
-
                     //recognizer.Write("recognizer.txt");
+                            result = this.Facerecognition.Predict(faceGrayPic);
+                            distancia = result.Distance;
+                            label = result.Label;
+                            limiteresposta = limiteresposta + 100; 
+                    }
 
-
-                    EigenFaceRecognizer.PredictionResult result = recognizer.Predict(faceGrayPic);
-
-                    if (result.Label != -1)
+                    if (label != -1)
                     {
-                        int lab = result.Label;
-                        distance[indtam] = result.Distance;
+                        int lab = label;
+                        distance[indtam] = distancia;
                         int ind = -1;
                         int indencontrado = -1;
                         foreach (var val in labels)
@@ -402,9 +426,9 @@ namespace WindowsFormsApp1
                              tamimagem[indtam].ToString() + "=" + resposta[indtam].ToString() + ";D=" + 
                              distance[indtam].ToString() +";" ;
 
-                        LbIndexPesquisa.Text = result.Label.ToString();
+                        LbIndexPesquisa.Text = label.ToString();
                         if (indencontrado > -1)
-                            pboxpesquisada.Image = trainingImages[ind].ToBitmap();
+                            pboxpesquisada.Image = trainingImages[indencontrado].ToBitmap();
 
                         //string arquivo = arquivos[lab] ;
                     }
@@ -450,18 +474,18 @@ namespace WindowsFormsApp1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var Chapeu = new Bitmap("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\chapeu.jpg");
+            //var Chapeu = new Bitmap("C:\\reconhecimentofacial\\Wfreconhecimento\\WindowsFormsApp1\\bin\\Debug\\fotos\\chapeu.jpg");
             //var i = this.faceRect[0].Width;
             //foreach (var face in this.faceRect)
             // {
             //var ExtractedFace = new Bitmap(this.faceRect[0].Width, this.faceRect[0].Height);
             //var FaceCanvas = Graphics.FromImage(Chapeu);
             //FaceCanvas.DrawImage(Chapeu, 0, 0, this.faceRect[0], GraphicsUnit.Pixel);
-            PointF p = new PointF();
-            p.X = 1;
-            p.Y = 1;
-            Graphics g = this.webcambox.CreateGraphics();
-            g.DrawImage(Chapeu, p );
+            //PointF p = new PointF();
+            //p.X = 1;
+            //p.Y = 1;
+            //Graphics g = this.webcambox.CreateGraphics();
+            //g.DrawImage(Chapeu, p );
             //Rectangle r = new Rectangle();
             //r.Width = 500; //this.faceRect[0].Width;
             //r.Height = 500;// this.faceRect[0].Height;
